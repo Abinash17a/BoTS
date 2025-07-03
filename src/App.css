@@ -1,0 +1,5 @@
+.reactflow-container {
+  width: 100%;
+  height: 500px; /* Or a fixed height like 500px */
+  /* You might also use 'vh' for viewport height, e.g., height: 80vh; */
+}
