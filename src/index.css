@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
+
 @tailwind utilities;
+
+@import "tailwindcss";
 html,
 body {
   margin: 0;
@@ -10,4 +11,9 @@ body {
 #app {
   width: 100vw;
   height: 100vh;
+}
+html, body, #root { /* Assuming #root is your main app div */
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
