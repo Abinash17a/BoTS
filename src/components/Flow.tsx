@@ -17,7 +17,7 @@ import {
   type OnConnect,
   type OnEdgesChange,
   type OnNodesChange,
-   useReactFlow
+  useReactFlow
 } from "@xyflow/react"
 import { v4 as uuidv4 } from "uuid"
 
@@ -120,10 +120,10 @@ const BotNode = ({ data, id, selected }: any) => (
     </div>
 
     <Handle
-  type="source"
-  position={Position.Right}
-  className="w-12 h-12 bg-blue-500 border-2 border-white" // Increased from w-10 h-10 to w-12 h-12
-/>
+      type="source"
+      position={Position.Right}
+      className="w-12 h-12 bg-blue-500 border-2 border-white" // Increased from w-10 h-10 to w-12 h-12
+    />
   </div>
 )
 
@@ -149,9 +149,9 @@ const nodeTypes = {
 function Flow() {
   const [nodes, setNodes] = useState<Node[]>(initialNodes)
   const [edges, setEdges] = useState<Edge[]>(initialEdges)
-    // const setViewport  = useReactFlow();
+  // const setViewport  = useReactFlow();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("")
   const [flowStats, setFlowStats] = useState({ userNodes: 0, botNodes: 0, connections: 0 })
 
@@ -284,6 +284,27 @@ function Flow() {
     link.download = "bot-flow.json"
     link.click()
   }
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      if (Array.isArray(data.nodes) && Array.isArray(data.edges)) {
+        setNodes(data.nodes);
+        setEdges(data.edges);
+        alert("Flow imported successfully!");
+      } else {
+        alert("Invalid JSON structure. Must contain 'nodes' and 'edges'.");
+      }
+    } catch (err) {
+      alert("Failed to import JSON: " + (err as Error).message);
+    }
+  };
+
 
   //   const handleImportClick = () => {
   //   fileInputRef.current?.click();
@@ -431,6 +452,26 @@ function Flow() {
             <span>📥</span>
             Export JSON
           </button>
+          <>
+            <input
+              id="import-json"
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
+            <label
+              htmlFor="import-json"
+              className="w-full cursor-pointer"
+            >
+              <div
+                className="w-full flex items-center justify-start gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors duration-200 font-medium"
+              >
+                <span>📥</span>
+                Import JSON
+              </div>
+            </label>
+          </>
 
         </div>
 
@@ -446,7 +487,7 @@ function Flow() {
       </div>
 
       {/* Flow Area - Fixed container sizing */}
-      <div className="flex-1 relative" style={{ height: "100vh", width: "100%" ,cursor: "crosshair" }}>
+      <div className="flex-1 relative" style={{ height: "100vh", width: "100%", cursor: "crosshair" }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
