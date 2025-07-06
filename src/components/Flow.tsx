@@ -19,7 +19,7 @@ import {
   type OnNodesChange,
   useReactFlow
 } from "@xyflow/react"
-import { v4 as uuidv4 } from "uuid"
+// import { v4 as uuidv4 } from "uuid"
 
 // Import ReactFlow styles
 import '@xyflow/react/dist/style.css';
@@ -32,28 +32,10 @@ const initialNodes: Node[] = [
     data: { label: "Start" },
     draggable: false,
   },
-  {
-    id: "1",
-    type: "userMessage",
-    position: { x: 50, y: 150 },
-    data: { message: "What is your name?", sender: "user" },
-  },
-  {
-    id: "2",
-    type: "botResponse",
-    position: { x: 300, y: 150 },
-    data: { message: "I am BotX, your AI assistant!", sender: "bot" },
-  },
 ]
 
 const initialEdges: Edge[] = [
-  {
-    id: "e1-2",
-    source: "1",
-    target: "2",
-    animated: true,
-    style: { stroke: "#6366f1", strokeWidth: 2 },
-  },
+
 ]
 
 // Custom Node Components
@@ -154,6 +136,7 @@ function Flow() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("")
   const [flowStats, setFlowStats] = useState({ userNodes: 0, botNodes: 0, connections: 0 })
+  const nodeIdCounter = useRef(2);
 
   // Calculate flow statistics
   useEffect(() => {
@@ -208,7 +191,7 @@ function Flow() {
   }
 
   const addNode = (type: "userMessage" | "botResponse") => {
-    const id = uuidv4()
+     const id = `${nodeIdCounter.current++}`;
     const newNode: Node = {
       id,
       type,
@@ -226,7 +209,7 @@ function Flow() {
       setEdges((eds) => [
         ...eds,
         {
-          id: `e-start-${id}`,
+          id: `e-${id}`,
           source: "start",
           target: id,
           animated: true,
@@ -305,48 +288,6 @@ function Flow() {
     }
   };
 
-
-  //   const handleImportClick = () => {
-  //   fileInputRef.current?.click();
-  // };
-
-  //   const importFlow = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0]; // Get the selected file
-
-  //   if (file) {
-  //     const reader = new FileReader();
-
-  //     reader.onload = (e) => {
-  //       try {
-  //         const content = e.target?.result as string;
-  //         const loadedFlow = JSON.parse(content);
-
-  //         if (loadedFlow.nodes && loadedFlow.edges) {
-  //           // Set the new nodes and edges from the loaded data
-  //           setNodes(loadedFlow.nodes || []);
-  //           setEdges(loadedFlow.edges || []);
-
-  //           // Optional: Reset viewport to fit the new flow
-  //           // This waits for the DOM to update before fitting
-  //           requestAnimationFrame(() => {
-  //               setViewport({ x: 0, y: 0, zoom: 1 }, { duration: 800 }); // Reset to origin and zoom 1
-  //               // Or if you want to fit the view of the new nodes:
-  //               // fitView(); // Requires useReactFlow().fitView
-  //           });
-
-  //           alert('Flow loaded successfully!');
-  //         } else {
-  //           alert('Invalid flow data: Missing nodes or edges arrays.');
-  //         }
-  //       } catch (error) {
-  //         console.error('Error parsing flow data:', error);
-  //         alert('Failed to parse flow data. Make sure it\'s a valid JSON file.');
-  //       }
-  //     };
-
-  //     reader.readAsText(file); // Read the file as text
-  //   }
-  // }, [setNodes, setEdges, setViewport]); // Include setViewport in dependencies
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Left Sidebar */}
