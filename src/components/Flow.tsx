@@ -23,6 +23,14 @@ import {
 
 // Import ReactFlow styles
 import '@xyflow/react/dist/style.css';
+import SidebarLayout from "./SideBarLayout";
+import { SidebarHeader } from "./SidebarHeader";
+import { FlowStats } from "./FlowStats";
+import { AddNodeButtons } from "./AddNodeButton";
+import { SearchBox } from "./SearchBox";
+import { ActionsPanel } from "./ActionPanel";
+import { SelectedNodeInfo } from "./SelectedNode";
+import FlowCanvas from "./FlowCanvas";
 
 const initialNodes: Node[] = [
   {
@@ -287,184 +295,36 @@ function Flow() {
       alert("Failed to import JSON: " + (err as Error).message);
     }
   };
-
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Left Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <span className="text-indigo-600">⚡</span>
-            Bot Flow Builder
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">Design your conversation flow</p>
-        </div>
+  <div className="flex h-screen bg-gray-50">
+    {/* Sidebar Section */}
+    <SidebarLayout>
+      <SidebarHeader />
+      <FlowStats stats={flowStats} />
+      <AddNodeButtons addNode={addNode} />
+      <SearchBox value={searchTerm} onChange={handleSearch} />
+      <ActionsPanel
+        onDelete={handleDeleteNode}
+        onSave={handleSave}
+        onLoad={handleLoad}
+        onExport={exportFlow}
+        onImport={handleImport}
+        selectedNodeId={selectedNodeId}
+      />
+      {selectedNodeId && <SelectedNodeInfo id={selectedNodeId} />}
+    </SidebarLayout>
 
-        {/* Flow Statistics */}
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Flow Statistics</h3>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="text-center p-2 bg-green-50 rounded-lg">
-              <div className="text-lg font-bold text-green-600">{flowStats.userNodes}</div>
-              <div className="text-xs text-green-700">User</div>
-            </div>
-            <div className="text-center p-2 bg-blue-50 rounded-lg">
-              <div className="text-lg font-bold text-blue-600">{flowStats.botNodes}</div>
-              <div className="text-xs text-blue-700">Bot</div>
-            </div>
-            <div className="text-center p-2 bg-purple-50 rounded-lg">
-              <div className="text-lg font-bold text-purple-600">{flowStats.connections}</div>
-              <div className="text-xs text-purple-700">Links</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Add Nodes Section */}
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Add Nodes</h3>
-          <div className="space-y-2">
-            <button
-              onClick={() => addNode("userMessage")}
-              className="w-full flex items-center justify-start gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors duration-200 font-medium"
-            >
-              <span>👤</span>
-              User Message
-            </button>
-            <button
-              onClick={() => addNode("botResponse")}
-              className="w-full flex items-center justify-start gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 font-medium"
-            >
-              <span>🤖</span>
-              Bot Response
-            </button>
-          </div>
-        </div>
-
-        {/* Search Section */}
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Search</h3>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
-            <input
-              type="text"
-              placeholder="Search messages..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        {/* Actions Section */}
-        <div className="p-4 space-y-2 flex-1">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Actions</h3>
-
-          <button
-            onClick={handleDeleteNode}
-            disabled={!selectedNodeId || selectedNodeId === "start"}
-            className="w-full flex items-center justify-start gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-md transition-colors duration-200 font-medium"
-          >
-            <span>🗑️</span>
-            Delete Selected
-          </button>
-
-          <hr className="my-3 border-gray-200" />
-
-          <button
-            onClick={handleSave}
-            className="w-full flex items-center justify-start gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors duration-200 font-medium"
-          >
-            <span>💾</span>
-            Save Flow
-          </button>
-
-          <button
-            onClick={handleLoad}
-            className="w-full flex items-center justify-start gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors duration-200 font-medium"
-          >
-            <span>📂</span>
-            Load Flow
-          </button>
-
-          <button
-            onClick={exportFlow}
-            className="w-full flex items-center justify-start gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors duration-200 font-medium"
-          >
-            <span>📥</span>
-            Export JSON
-          </button>
-          <>
-            <input
-              id="import-json"
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-            <label
-              htmlFor="import-json"
-              className="w-full cursor-pointer"
-            >
-              <div
-                className="w-full flex items-center justify-start gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors duration-200 font-medium"
-              >
-                <span>📥</span>
-                Import JSON
-              </div>
-            </label>
-          </>
-
-        </div>
-
-        {/* Selected Node Info */}
-        {selectedNodeId && (
-          <div className="p-4 border-t border-gray-200 bg-gray-50">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Selected Node</h3>
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 border">
-              ID: {selectedNodeId}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Flow Area - Fixed container sizing */}
-      <div className="flex-1 relative" style={{ height: "100vh", width: "100%", cursor: "crosshair" }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          nodeTypes={nodeTypes}
-          fitView
-          className="bg-gray-50"
-          style={{ width: "100%", height: "100%" }}
-          defaultEdgeOptions={{
-            animated: true,
-            style: { stroke: "#6366f1", strokeWidth: 2 },
-          }}
-        >
-          <Background color="#e5e7eb" gap={20} />
-          <MiniMap
-            className="bg-white border border-gray-200 rounded-lg"
-            nodeColor={(node) => {
-              switch (node.type) {
-                case "userMessage":
-                  return "#10b981";
-                case "botResponse":
-                  return "#3b82f6";
-                case "startNode":
-                  return "#8b5cf6";
-                default:
-                  return "#6b7280";
-              }
-            }}
-          />
-          <Controls className="bg-white border border-gray-200 rounded-lg" />
-        </ReactFlow>
-      </div>
-    </div>
-  )
+    {/* Flow Canvas Section */}
+    <FlowCanvas
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      onNodeClick={onNodeClick}
+      nodeTypes={nodeTypes}
+    />
+  </div>
+);
 }
 export default Flow
