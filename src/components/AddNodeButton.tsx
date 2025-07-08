@@ -4,7 +4,7 @@ export function AddNodeButtons({
   addNode: (type: "userMessage" | "botResponse") => void;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 p-4">
       <div
         draggable
         onDragStart={(e) => {
