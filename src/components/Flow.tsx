@@ -32,20 +32,25 @@ import { SearchBox } from "./SearchBox";
 import { ActionsPanel } from "./ActionPanel";
 import { SelectedNodeInfo } from "./SelectedNode";
 import FlowCanvas from "./FlowCanvas";
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
-const initialNodes: Node[] = [
-  {
-    id: "start",
-    type: "startNode",
-    position: { x: 100, y: 20 },
-    data: { label: "Start" },
-    draggable: false,
-  },
-]
 
-const initialEdges: Edge[] = [
 
-]
+
+// const initialNodes: Node[] = [
+//   {
+//     id: "start",
+//     type: "startNode",
+//     position: { x: 100, y: 20 },
+//     data: { label: `${projectName}` }, // safe now
+//     draggable: false,
+//   },
+// ];
+
+// const initialEdges: Edge[] = [
+
+// ]
 
 // Custom Node Components
 const UserNode = ({ data, id, selected }: any) => (
@@ -138,14 +143,30 @@ const nodeTypes = {
 }
 
 function Flow() {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes)
-  const [edges, setEdges] = useState<Edge[]>(initialEdges)
   // const setViewport  = useReactFlow();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("")
   const [flowStats, setFlowStats] = useState({ userNodes: 0, botNodes: 0, connections: 0 })
   const nodeIdCounter = useRef(2);
+
+const { projectName, clientName, clientEmail } = useSelector(
+  (state: RootState) => state.project
+);
+  const initialNodes: Node[] = [
+    {
+      id: "start",
+      type: "startNode",
+      position: { x: 100, y: 20 },
+      data: { label: projectName }, // projectName is accessible here
+      draggable: false,
+    },
+  ];
+
+  const initialEdges: Edge[] = [];
+    const [nodes, setNodes] = useState<Node[]>(initialNodes)
+  const [edges, setEdges] = useState<Edge[]>(initialEdges)
+  console.log("Project Name:", projectName);
 
   // Calculate flow statistics
   useEffect(() => {
