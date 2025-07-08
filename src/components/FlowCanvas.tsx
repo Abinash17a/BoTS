@@ -14,32 +14,40 @@ import {
   type OnConnect,
   type OnEdgesChange,
   type OnNodesChange,
-  useReactFlow
+  useReactFlow,
+  type OnInit
 } from "@xyflow/react"
 
 interface FlowCanvasProps {
+  onInit: OnInit;
   nodes: Node[];
   edges: Edge[];
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
   onNodeClick: any;
+  onDragOver:any,
+  onDrop:any,
   nodeTypes: any;
 }
 
 
 const FlowCanvas: React.FC<FlowCanvasProps> = ({
+  onInit,
   nodes,
   edges,
   onNodesChange,
   onEdgesChange,
   onConnect,
   onNodeClick,
+  onDragOver,
+  onDrop,
   nodeTypes,
 }) => {
   return (
     <div className="flex-1 relative" style={{ height: "100vh", width: "100%", cursor: "crosshair" }}>
       <ReactFlow
+        onInit={onInit}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -47,6 +55,8 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
         fitView
         className="bg-gray-50"
         style={{ width: "100%", height: "100%" }}

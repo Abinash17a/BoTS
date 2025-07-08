@@ -17,7 +17,8 @@ import {
   type OnConnect,
   type OnEdgesChange,
   type OnNodesChange,
-  useReactFlow
+  useReactFlow,
+  ReactFlowInstance
 } from "@xyflow/react"
 // import { v4 as uuidv4 } from "uuid"
 
@@ -199,33 +200,102 @@ function Flow() {
   }
 
   const addNode = (type: "userMessage" | "botResponse") => {
-     const id = `${nodeIdCounter.current++}`;
+    const id = `${nodeIdCounter.current++}`;
     const newNode: Node = {
       id,
       type,
       position: { x: Math.random() * 400 + 50, y: Math.random() * 300 + 100 },
       data: {
-        message: type === "userMessage" ? "New user message" : "New bot response",
+        message:
+          type === "userMessage" ? "New user message" : "New bot response",
         sender: type === "userMessage" ? "user" : "bot",
         isEditing: false,
         onChange: handleInlineEdit,
       },
-    }
-    setNodes((nds) => [...nds, newNode])
+    };
+
+    setNodes((nds) => [...nds, newNode]);
 
     if (type === "userMessage") {
-      setEdges((eds) => [
-        ...eds,
-        {
-          id: `e-${id}`,
-          source: "start",
-          target: id,
-          animated: true,
-          style: { stroke: "#6366f1", strokeWidth: 2 },
-        },
-      ])
+      const userMessageCount = nodes.filter((n) => n.type === "userMessage").length;
+
+      if (userMessageCount === 0) {
+        setEdges((eds) => [
+          ...eds,
+          {
+            id: `e-start-${id}`,
+            source: "start",
+            target: id,
+            animated: true,
+            style: { stroke: "#6366f1", strokeWidth: 2 },
+          },
+        ]);
+      }
     }
-  }
+  };
+
+
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      if (!reactFlowInstance) return;
+
+      const type = event.dataTransfer.getData("application/reactflow") as
+        | "userMessage"
+        | "botResponse";
+      if (!type) return;
+
+      const bounds = event.currentTarget.getBoundingClientRect();
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top,
+      });
+
+      const id = `${nodeIdCounter.current++}`;
+      const newNode: Node = {
+        id,
+        type,
+        position,
+        data: {
+          message:
+            type === "userMessage" ? "New user message" : "New bot response",
+          sender: type === "userMessage" ? "user" : "bot",
+          isEditing: false,
+          onChange: handleInlineEdit,
+        },
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+
+      // 🔄 Auto-connect only if this is the first userMessage node
+      if (type === "userMessage") {
+        const userMessageCount = nodes.filter(
+          (n) => n.type === "userMessage"
+        ).length;
+
+        if (userMessageCount === 0) {
+          setEdges((eds) => [
+            ...eds,
+            {
+              id: `e-start-${id}`,
+              source: "start",
+              target: id,
+              animated: true,
+              style: { stroke: "#6366f1", strokeWidth: 2 },
+            },
+          ]);
+        }
+      }
+    },
+    [reactFlowInstance, nodes]
+  );
 
   const handleSave = () => {
     localStorage.setItem("botFlowNodes", JSON.stringify(nodes))
@@ -316,6 +386,7 @@ function Flow() {
 
     {/* Flow Canvas Section */}
     <FlowCanvas
+      onInit={setReactFlowInstance}
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
@@ -323,6 +394,8 @@ function Flow() {
       onConnect={onConnect}
       onNodeClick={onNodeClick}
       nodeTypes={nodeTypes}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
     />
   </div>
 );
