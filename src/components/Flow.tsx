@@ -34,23 +34,8 @@ import { SelectedNodeInfo } from "./SelectedNode";
 import FlowCanvas from "./FlowCanvas";
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import axios from 'axios';
 
-
-
-
-// const initialNodes: Node[] = [
-//   {
-//     id: "start",
-//     type: "startNode",
-//     position: { x: 100, y: 20 },
-//     data: { label: `${projectName}` }, // safe now
-//     draggable: false,
-//   },
-// ];
-
-// const initialEdges: Edge[] = [
-
-// ]
 
 // Custom Node Components
 const UserNode = ({ data, id, selected }: any) => (
@@ -254,6 +239,23 @@ const { projectName, clientName, clientEmail } = useSelector(
       }
     }
   };
+   const sanitizeFlowData = (nodes: any[], edges: any[]) => {
+  const sanitizedNodes = nodes.map((node) => ({
+    id: node.id,
+    type: node.type,
+    position: node.position,
+    data: Object.fromEntries(
+      Object.entries(node.data).filter(([key]) => key !== 'isEditing')
+    ),
+  }));
+
+  const sanitizedEdges = edges.map((edge) => ({
+    source: edge.source,
+    target: edge.target,
+  }));
+
+  return { nodes: sanitizedNodes, edges: sanitizedEdges };
+};
 
 
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
@@ -318,11 +320,32 @@ const { projectName, clientName, clientEmail } = useSelector(
     [reactFlowInstance, nodes]
   );
 
-  const handleSave = () => {
-    localStorage.setItem("botFlowNodes", JSON.stringify(nodes))
-    localStorage.setItem("botFlowEdges", JSON.stringify(edges))
-    alert("Flow saved successfully!")
+
+const handlesubmit = async () => {
+  console.log('clg data uses', projectName, clientName, clientEmail);
+
+  const cleanedFlowData = sanitizeFlowData(nodes, edges);
+
+  const payload = {
+    projectName,
+    clientName,
+    clientEmail,
+    ...cleanedFlowData,
+  };
+
+  console.log("Sending cleaned flow data", payload);
+
+  try {
+    const response = await axios.post('http://your-backend-url/api/saveFlow', payload);
+    console.log("Response from backend:", response.data);
+    alert("Flow saved successfully!");
+  } catch (error) {
+    console.error("Error saving flow data:", error);
+    alert("Failed to save flow. Please try again.");
   }
+};
+
+
 
   const handleLoad = () => {
     const savedNodes = localStorage.getItem("botFlowNodes")
@@ -396,7 +419,7 @@ const { projectName, clientName, clientEmail } = useSelector(
       <SearchBox value={searchTerm} onChange={handleSearch} />
       <ActionsPanel
         onDelete={handleDeleteNode}
-        onSave={handleSave}
+        onSubmit={handlesubmit}
         onLoad={handleLoad}
         onExport={exportFlow}
         onImport={handleImport}

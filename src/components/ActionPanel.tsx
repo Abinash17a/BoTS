@@ -2,16 +2,16 @@ import React from "react";
 
 interface ActionsPanelProps {
   onDelete: () => void;
-  onSave: () => void;
   onLoad: () => void;
   onExport: () => void;
   onImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: () => void;
   selectedNodeId: string | null;
 }
 
 export const ActionsPanel: React.FC<ActionsPanelProps> = ({
   onDelete,
-  onSave,
+  onSubmit,
   onLoad,
   onExport,
   onImport,
@@ -33,11 +33,11 @@ export const ActionsPanel: React.FC<ActionsPanelProps> = ({
       <hr className="my-3 border-gray-200" />
 
       <button
-        onClick={onSave}
+        onClick={onSubmit}
         className="w-full flex items-center justify-start gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors duration-200 font-medium"
       >
         <span>💾</span>
-        Save Flow
+        Submit Flow
       </button>
 
       <button
