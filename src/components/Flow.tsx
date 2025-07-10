@@ -323,13 +323,14 @@ const { projectName, clientName, clientEmail } = useSelector(
 
 const handlesubmit = async () => {
   console.log('clg data uses', projectName, clientName, clientEmail);
-
+ const flowData = { nodes, edges}
   const cleanedFlowData = sanitizeFlowData(nodes, edges);
 
   const payload = {
     projectName,
     clientName,
     clientEmail,
+    flowData,
     ...cleanedFlowData,
   };
 
