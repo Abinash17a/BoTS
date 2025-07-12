@@ -35,6 +35,7 @@ import FlowCanvas from "./FlowCanvas";
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 
 // Custom Node Components
@@ -134,6 +135,7 @@ function Flow() {
   const [searchTerm, setSearchTerm] = useState("")
   const [flowStats, setFlowStats] = useState({ userNodes: 0, botNodes: 0, connections: 0 })
   const nodeIdCounter = useRef(2);
+  const navigate = useNavigate();
 
 const { projectName, clientName, clientEmail } = useSelector(
   (state: RootState) => state.project
@@ -335,15 +337,16 @@ const handlesubmit = async () => {
   };
 
   console.log("Sending cleaned flow data", payload);
-
-  try {
-    const response = await axios.post('http://your-backend-url/api/saveFlow', payload);
-    console.log("Response from backend:", response.data);
-    alert("Flow saved successfully!");
-  } catch (error) {
-    console.error("Error saving flow data:", error);
-    alert("Failed to save flow. Please try again.");
-  }
+  localStorage.setItem('flow_demo_data', JSON.stringify(cleanedFlowData));
+  navigate('/bots/flow-demo')
+  // try {
+  //   const response = await axios.post('http://your-backend-url/api/saveFlow', payload);
+  //   console.log("Response from backend:", response.data);
+  //   alert("Flow saved successfully!");
+  // } catch (error) {
+  //   console.error("Error saving flow data:", error);
+  //   alert("Failed to save flow. Please try again.");
+  // }
 };
 
 
