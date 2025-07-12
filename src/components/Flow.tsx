@@ -332,7 +332,7 @@ const handlesubmit = async () => {
 
   try {
     // 1. Create/set the project
-    const projectRes = await axios.post('http://localhost:3000/project/', {
+    const projectRes = await axios.post('http://localhost:3000/projects/', {
       projectName,
       clientName,
       clientEmail,
@@ -348,7 +348,7 @@ const handlesubmit = async () => {
       flowData,
       ...cleanedFlowData,
     };
-    const submitRes = await axios.post('http://localhost:3000/project/submit', submitPayload);
+    const submitRes = await axios.post('http://localhost:3000/projects/submit', submitPayload);
     console.log("Submit response:", submitRes.data);
     alert("Project and flow saved successfully!");
   } catch (error) {
