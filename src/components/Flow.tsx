@@ -331,7 +331,6 @@ const handlesubmit = async () => {
   const cleanedFlowData = sanitizeFlowData(nodes, edges);
 
   try {
-    // 1. Create/set the project
     const projectRes = await axios.post('http://localhost:3000/projects/', {
       name: projectName,
       client: {
@@ -340,15 +339,13 @@ const handlesubmit = async () => {
       }
     });
     const project = projectRes.data;
-    // If backend returns an id, use it; otherwise, use projectName
-    const projectId = project.id || project._id || projectName;
-
-    // 2. Submit the flow data, referencing the project
+    console.log('cleaned flow data', cleanedFlowData);
     const submitPayload = {
-      projectId,
-      projectName,
-      flowData,
-      ...cleanedFlowData,
+      clientEmail,
+      clientName,
+      nodes: cleanedFlowData.nodes,
+      edges: cleanedFlowData.edges,
+      projectName
     };
     const submitRes = await axios.post('http://localhost:3000/projects/submit', submitPayload);
     console.log("Submit response:", submitRes.data);
