@@ -333,9 +333,11 @@ const handlesubmit = async () => {
   try {
     // 1. Create/set the project
     const projectRes = await axios.post('http://localhost:3000/projects/', {
-      projectName,
-      clientName,
-      clientEmail,
+      name: projectName,
+      client: {
+        name: clientName,
+        email: clientEmail
+      }
     });
     const project = projectRes.data;
     // If backend returns an id, use it; otherwise, use projectName
