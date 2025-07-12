@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-import { useCallback, useState, useEffect, useRef } from "react"
+import React, { useCallback, useState, useEffect, useRef } from "react"
 import {
   ReactFlow,
   addEdge,
@@ -72,42 +71,110 @@ const UserNode = ({ data, id, selected }: any) => (
   </div>
 )
 
-const BotNode = ({ data, id, selected }: any) => (
-  <div
-    className={`relative bg-gradient-to-r from-blue-50 to-indigo-50 border-2 rounded-lg p-4 min-w-[200px] shadow-sm transition-all duration-200 ${selected ? "border-blue-500 shadow-lg scale-105" : "border-blue-300 hover:border-blue-400"
+const BotNode = ({ data, id, selected }: any) => {
+  const [optionInput, setOptionInput] = React.useState("");
+
+  const handleAddOption = () => {
+    if (optionInput.trim()) {
+      data.onOptionsChange([...(data.options || []), optionInput.trim()], id);
+      setOptionInput("");
+    }
+  };
+
+  const handleRemoveOption = (idx: number) => {
+    const newOptions = [...(data.options || [])];
+    newOptions.splice(idx, 1);
+    data.onOptionsChange(newOptions, id);
+  };
+
+  return (
+    <div
+      className={`relative bg-gradient-to-r from-blue-50 to-indigo-50 border-2 rounded-lg p-4 min-w-[200px] shadow-sm transition-all duration-200 ${selected ? "border-blue-500 shadow-lg scale-105" : "border-blue-300 hover:border-blue-400"
       }`}
-  >
-    <Handle type="target" position={Position.Left} className="w-10 h-10 bg-blue-500 border-2 border-white" />
+    >
+      <Handle type="target" position={Position.Left} className="w-10 h-10 bg-blue-500 border-2 border-white" />
 
-    <div className="flex items-center gap-2 mb-2">
-      <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
-        <span className="text-white text-xs">🤖</span>
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+          <span className="text-white text-xs">🤖</span>
+        </div>
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+          Bot Response
+        </span>
       </div>
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-        Bot Response
-      </span>
-    </div>
 
-    <div className="text-sm">
-      {data.isEditing ? (
-        <textarea
-          value={data.message}
-          onChange={(e) => data.onChange(e, id)}
-          className="w-full min-h-[60px] text-sm resize-none border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Enter bot response..."
-        />
-      ) : (
-        <div className="text-gray-700 font-medium">{data.message}</div>
-      )}
-    </div>
+      <div className="text-sm">
+        {data.isEditing ? (
+          <>
+            <textarea
+              value={data.message}
+              onChange={(e) => data.onChange(e, id)}
+              className="w-full min-h-[60px] text-sm resize-none border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter bot response..."
+            />
+            {/* Option editing UI */}
+            <div className="mt-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={optionInput}
+                  onChange={e => setOptionInput(e.target.value)}
+                  className="border rounded px-2 py-1 text-xs"
+                  placeholder="Add option..."
+                  onKeyDown={e => { if (e.key === 'Enter') handleAddOption(); }}
+                />
+                <button
+                  onClick={handleAddOption}
+                  className="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
+                  type="button"
+                >
+                  Add
+                </button>
+              </div>
+              <div className="flex flex-col gap-1 mt-2">
+                {(data.options || []).map((option: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="bg-yellow-100 px-2 py-1 rounded text-xs">{option}</span>
+                    <button
+                      onClick={() => handleRemoveOption(idx)}
+                      className="text-red-500 text-xs"
+                      type="button"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="text-gray-700 font-medium">{data.message}</div>
+            {Array.isArray(data.options) && data.options.length > 0 && (
+              <div className="flex flex-col gap-2 mt-3">
+                {data.options.map((option: string, idx: number) => (
+                  <button
+                    key={idx}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded transition-colors duration-200 text-xs font-medium"
+                    disabled
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
-    <Handle
-      type="source"
-      position={Position.Right}
-      className="w-12 h-12 bg-blue-500 border-2 border-white" // Increased from w-10 h-10 to w-12 h-12
-    />
-  </div>
-)
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="w-12 h-12 bg-blue-500 border-2 border-white"
+      />
+    </div>
+  );
+};
 
 const StartNode = ({ data, selected }: any) => (
   <div
@@ -137,9 +204,9 @@ function Flow() {
   const nodeIdCounter = useRef(2);
   const navigate = useNavigate();
 
-const { projectName, clientName, clientEmail } = useSelector(
-  (state: RootState) => state.project
-);
+  const { projectName, clientName, clientEmail } = useSelector(
+    (state: RootState) => state.project
+  );
   const initialNodes: Node[] = [
     {
       id: "start",
@@ -151,7 +218,7 @@ const { projectName, clientName, clientEmail } = useSelector(
   ];
 
   const initialEdges: Edge[] = [];
-    const [nodes, setNodes] = useState<Node[]>(initialNodes)
+  const [nodes, setNodes] = useState<Node[]>(initialNodes)
   const [edges, setEdges] = useState<Edge[]>(initialEdges)
   console.log("Project Name:", projectName);
 
@@ -174,6 +241,7 @@ const { projectName, clientName, clientEmail } = useSelector(
           ...node.data,
           isEditing: node.id === selectedNodeId,
           onChange: handleInlineEdit,
+          onOptionsChange: handleOptionsChange,
         },
       })),
     )
@@ -205,6 +273,15 @@ const { projectName, clientName, clientEmail } = useSelector(
     setNodes((prev) =>
       prev.map((node) => (node.id === id ? { ...node, data: { ...node.data, message: newMessage } } : node)),
     )
+  }
+
+  // Handler to update options array for a bot node
+  const handleOptionsChange = (newOptions: string[], id: string) => {
+    setNodes((prev) =>
+      prev.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, options: newOptions } } : node
+      )
+    );
   }
 
   const addNode = (type: "userMessage" | "botResponse") => {
