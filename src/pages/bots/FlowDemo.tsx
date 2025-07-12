@@ -32,6 +32,7 @@ export default function FlowDemo() {
   const [allNodes, setAllNodes] = useState<FlowNode[]>([]);
   const [allEdges, setAllEdges] = useState<FlowEdge[]>([]);
   const navigate = useNavigate();
+  const bottomRef = React.useRef<HTMLDivElement | null>(null);
 
   // Store nodes and edges for lookup, but do not pre-populate chat
   useEffect(() => {
@@ -52,23 +53,31 @@ export default function FlowDemo() {
   }, []);
 
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chat]);
+
+
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-tr from-indigo-50 to-white">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+        <button className="mt-2 text-white py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-900 mb-4 text-sm" onClick={() => navigate('/bots')}>Back to Flow Builder</button>
         <h2 className="text-2xl font-bold mb-2 text-indigo-600">Flow Demo Chat</h2>
         <div className="mb-2 text-xs text-gray-500">Project: <span className="text-gray-700">{projectName || 'N/A'}</span></div>
         <div className="mb-4 text-xs text-gray-500">Client Email: <span className="text-gray-700">{clientEmail || 'N/A'}</span></div>
 
-        <div className="h-64 overflow-y-auto border rounded p-2 mb-4 bg-gray-50">
+        <div className="h-96 max-h-96 overflow-y-auto scrollbar-hide border rounded p-2 mb-4 bg-gray-50">
           {chat.length === 0 && <div className="text-gray-400">No conversation found.</div>}
           {chat.map((node, idx) => (
             <div key={idx} className={`mb-2 flex ${node.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`px-3 py-2 rounded-lg max-w-xs ${node.sender === 'user' ? 'bg-indigo-200 text-right' : 'bg-gray-200 text-left'}`}>
+              <div className={`px-3 py-2 rounded-lg max-w-xs ${node.sender === 'user' ? 'bg-indigo-200 text-left' : 'bg-gray-200 text-left'}`}>
                 <span className="block text-xs text-gray-500">{node.sender}</span>
                 <span>{node.message}</span>
               </div>
             </div>
           ))}
+          <div ref={bottomRef} />
         </div>
         <form className="flex gap-2 mt-2" onSubmit={e => {
           e.preventDefault();
@@ -108,7 +117,6 @@ export default function FlowDemo() {
             className="bg-indigo-500 text-white px-4 py-1 rounded hover:bg-indigo-600 transition"
           >Send</button>
         </form>
-        <button className="mt-2 text-indigo-600 underline" onClick={() => navigate('/bots')}>Back to Flow Builder</button>
       </div>
     </div>
   );
