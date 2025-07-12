@@ -129,6 +129,8 @@ const nodeTypes = {
 }
 
 function Flow() {
+  // ...existing state
+
   // const setViewport  = useReactFlow();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -325,31 +327,36 @@ const { projectName, clientName, clientEmail } = useSelector(
 
 const handlesubmit = async () => {
   console.log('clg data uses', projectName, clientName, clientEmail);
- const flowData = { nodes, edges}
+  const flowData = { nodes, edges }
   const cleanedFlowData = sanitizeFlowData(nodes, edges);
 
-  const payload = {
-    projectName,
-    clientName,
-    clientEmail,
-    flowData,
-    ...cleanedFlowData,
-  };
-
-  console.log("Sending cleaned flow data", payload);
-  // localStorage.setItem('flow_demo_data', JSON.stringify(cleanedFlowData));
-  // navigate('/bots/flow-demo')
   try {
-    const response = await axios.post('http://localhost:3000/submit', payload);
-    console.log("Response from backend:", response.data);
-    alert("Flow saved successfully!");
+    // 1. Create/set the project
+    const projectRes = await axios.post('http://localhost:3000/project/', {
+      projectName,
+      clientName,
+      clientEmail,
+    });
+    const project = projectRes.data;
+    // If backend returns an id, use it; otherwise, use projectName
+    const projectId = project.id || project._id || projectName;
+
+    // 2. Submit the flow data, referencing the project
+    const submitPayload = {
+      projectId,
+      projectName,
+      flowData,
+      ...cleanedFlowData,
+    };
+    const submitRes = await axios.post('http://localhost:3000/project/submit', submitPayload);
+    console.log("Submit response:", submitRes.data);
+    alert("Project and flow saved successfully!");
   } catch (error) {
-    console.error("Error saving flow data:", error);
-    alert("Failed to save flow. Please try again.");
+    console.error("Error saving project or flow data:", error);
+    alert("Failed to save project or flow. Please try again.");
   }
   navigate('/bots/flow-demo')
 };
-
 
 
   const handleLoad = () => {
@@ -422,6 +429,7 @@ const handlesubmit = async () => {
       <FlowStats stats={flowStats} />
       <AddNodeButtons addNode={addNode} />
       <SearchBox value={searchTerm} onChange={handleSearch} />
+
       <ActionsPanel
         onDelete={handleDeleteNode}
         onSubmit={handlesubmit}
