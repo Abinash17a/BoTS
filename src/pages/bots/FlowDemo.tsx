@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 
 interface FlowNode {
   id: string;
@@ -27,8 +29,9 @@ function mockBotApi({ projectName, clientEmail, userMessage }: { projectName: st
 export default function FlowDemo() {
   const [chat, setChat] = useState<{ sender: 'user' | 'bot'; message: string }[]>([]);
   const [input, setInput] = useState('');
-  const [projectName, setProjectName] = useState('');
-  const [clientEmail, setClientEmail] = useState('');
+  // Get projectName and clientEmail from redux store
+  const projectName = useSelector((state: any) => state.project.projectName);
+  const clientEmail = useSelector((state: any) => state.project.clientEmail);
   const [allNodes, setAllNodes] = useState<FlowNode[]>([]);
   const [allEdges, setAllEdges] = useState<FlowEdge[]>([]);
   const navigate = useNavigate();
@@ -41,14 +44,6 @@ export default function FlowDemo() {
       const { nodes, edges } = JSON.parse(saved);
       setAllNodes(nodes || []);
       setAllEdges(edges || []);
-      let proj = '';
-      let email = '';
-      const startNode = nodes.find((n: FlowNode) => n.type === 'startNode');
-      if (startNode && startNode.data && startNode.data.label) {
-        proj = startNode.data.label;
-      }
-      setProjectName(proj);
-      setClientEmail(email);
     }
   }, []);
 
@@ -79,31 +74,40 @@ export default function FlowDemo() {
           ))}
           <div ref={bottomRef} />
         </div>
-        <form className="flex gap-2 mt-2" onSubmit={e => {
+        <form className="flex gap-2 mt-2" onSubmit={async e => {
           e.preventDefault();
           if (!input.trim()) return;
 
-          // Find the userMessage node with matching message
-          const userNode = allNodes.find(n => n.type === 'userMessage' && n.data.message.trim().toLowerCase() === input.trim().toLowerCase());
-          let botReply = 'No matching bot response found.';
-
-          if (userNode) {
-            // Find the edge where source is this user node
-            const edge = allEdges.find(e => e.source === userNode.id);
-            if (edge) {
-              // Find the botResponse node whose id matches edge.target
-              const botNode = allNodes.find(n => n.type === 'botResponse' && n.id === edge.target);
-              if (botNode) {
-                botReply = botNode.data.message;
-              }
-            }
-          }
-
+          // Add user message immediately
           setChat(prev => [
             ...prev,
             { sender: 'user' as const, message: input },
-            { sender: 'bot' as const, message: botReply }
+            { sender: 'bot' as const, message: '...' }
           ]);
+
+          try {
+            const res = await axios.post('http://localhost:3000/clients/response', {
+              query: input,
+              email: clientEmail,
+              projectName: projectName
+            });
+            const botReply = res.data?.response || res.data?.message || 'No response from bot.';
+            setChat(prev => {
+              // Replace last bot message ('...') with real reply
+              const updated = [...prev];
+              // Find last bot message index
+              const idx = updated.map(x => x.sender).lastIndexOf('bot');
+              if (idx !== -1) updated[idx] = { sender: 'bot', message: botReply };
+              return updated;
+            });
+          } catch (err) {
+            setChat(prev => {
+              const updated = [...prev];
+              const idx = updated.map(x => x.sender).lastIndexOf('bot');
+              if (idx !== -1) updated[idx] = { sender: 'bot', message: 'Error contacting bot API.' };
+              return updated;
+            });
+          }
           setInput('');
         }}>
           <input
