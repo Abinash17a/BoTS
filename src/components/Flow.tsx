@@ -337,16 +337,17 @@ const handlesubmit = async () => {
   };
 
   console.log("Sending cleaned flow data", payload);
-  localStorage.setItem('flow_demo_data', JSON.stringify(cleanedFlowData));
+  // localStorage.setItem('flow_demo_data', JSON.stringify(cleanedFlowData));
+  // navigate('/bots/flow-demo')
+  try {
+    const response = await axios.post('http://localhost:3000/submit', payload);
+    console.log("Response from backend:", response.data);
+    alert("Flow saved successfully!");
+  } catch (error) {
+    console.error("Error saving flow data:", error);
+    alert("Failed to save flow. Please try again.");
+  }
   navigate('/bots/flow-demo')
-  // try {
-  //   const response = await axios.post('http://your-backend-url/api/saveFlow', payload);
-  //   console.log("Response from backend:", response.data);
-  //   alert("Flow saved successfully!");
-  // } catch (error) {
-  //   console.error("Error saving flow data:", error);
-  //   alert("Failed to save flow. Please try again.");
-  // }
 };
 
 
