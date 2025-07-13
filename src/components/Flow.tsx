@@ -474,20 +474,30 @@ const handlesubmit = async () => {
       <div className="p-4 border-b border-gray-200">
         <h3 className="text-sm font-semibold text-gray-700 mb-2">AI Bot Flow Prompt</h3>
         <div className="flex gap-2">
-          <input
+          <textarea
             type="text"
             placeholder="Describe your bot flow..."
             value={promptInput}
-            onChange={e => setPromptInput(e.target.value)}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            onChange={e => {
+              setPromptInput(e.target.value);
+              // Auto resize logic
+              const el = e.target;
+              el.style.height = '50px'; // reset first
+              el.style.height = Math.min(el.scrollHeight, 150) + 'px'; // grow until max
+            }}
+            style={{ height: '50px', maxHeight: '150px', overflowY: 'auto' }}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
             disabled={loadingFlow}
           />
           <button
             onClick={handleSendPrompt}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="px-4 py-2 max-h-[50px] bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
             disabled={loadingFlow || !promptInput.trim()}
-          >{loadingFlow ? 'Loading...' : 'Send'}</button>
+          >
+            {loadingFlow ? 'Loading...' : 'Send'}
+          </button>
         </div>
+
         {flowError && <div className="text-xs text-red-600 mt-2">{flowError}</div>}
       </div>
       <AddNodeButtons addNode={addNode} />
