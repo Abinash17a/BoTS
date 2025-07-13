@@ -131,6 +131,50 @@ const nodeTypes = {
 function Flow() {
   // ...existing state
 
+  const [promptInput, setPromptInput] = useState("");
+  const [loadingFlow, setLoadingFlow] = useState(false);
+  const [flowError, setFlowError] = useState("");
+
+  // Helper to update nodes/edges from backend response
+  function updateFlowFromBackend(response: any) {
+    try {
+      let flow = response;
+      if (typeof flow === "string") {
+        flow = JSON.parse(flow);
+      } else if (response.response) {
+        flow = typeof response.response === "string" ? JSON.parse(response.response) : response.response;
+      }
+      if (Array.isArray(flow.nodes) && Array.isArray(flow.edges)) {
+        setNodes(flow.nodes);
+        setEdges(flow.edges);
+      } else {
+        throw new Error("Invalid flow format from backend");
+      }
+    } catch (e: any) {
+      setFlowError("Failed to parse flow: " + e.message);
+    }
+  }
+
+  // Handler for sending prompt to backend
+  async function handleSendPrompt() {
+    setLoadingFlow(true);
+    setFlowError("");
+    try {
+      const res = await axios.post("http://localhost:3000/clients/createFlow", {
+        query: promptInput,
+        email: clientEmail,
+        projectName,
+      });
+      updateFlowFromBackend(res.data);
+    } catch (err: any) {
+      setFlowError(err?.response?.data?.message || err.message || "Unknown error");
+    } finally {
+      setLoadingFlow(false);
+    }
+  }
+
+  // ...existing state
+
   // const setViewport  = useReactFlow();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -426,6 +470,26 @@ const handlesubmit = async () => {
     <SidebarLayout>
       <SidebarHeader />
       <FlowStats stats={flowStats} />
+      {/* Prompt input for bot flow generation */}
+      <div className="p-4 border-b border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">AI Bot Flow Prompt</h3>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Describe your bot flow..."
+            value={promptInput}
+            onChange={e => setPromptInput(e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            disabled={loadingFlow}
+          />
+          <button
+            onClick={handleSendPrompt}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            disabled={loadingFlow || !promptInput.trim()}
+          >{loadingFlow ? 'Loading...' : 'Send'}</button>
+        </div>
+        {flowError && <div className="text-xs text-red-600 mt-2">{flowError}</div>}
+      </div>
       <AddNodeButtons addNode={addNode} />
       <SearchBox value={searchTerm} onChange={handleSearch} />
 
