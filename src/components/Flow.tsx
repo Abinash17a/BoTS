@@ -41,7 +41,7 @@ import { useNavigate } from 'react-router-dom';
 // Custom Node Components
 const UserNode = ({ data, id, selected }: any) => (
   <div
-    className={`relative bg-gradient-to-r from-green-50 to-emerald-50 border-2 rounded-lg p-4 min-w-[200px] shadow-sm transition-all duration-200 ${selected ? "border-green-500 shadow-lg scale-105" : "border-green-300 hover:border-green-400"
+    className={`relative max-w-96 bg-gradient-to-r from-green-50 to-emerald-50 border-2 rounded-lg p-4 min-w-[200px] shadow-sm transition-all duration-200 ${selected ? "border-green-500 shadow-lg scale-105" : "border-green-300 hover:border-green-400"
       }`}
   >
     <Handle type="target" position={Position.Left} className="w-5 h-5 bg-green-500 border-2 border-white" />
@@ -74,7 +74,7 @@ const UserNode = ({ data, id, selected }: any) => (
 
 const BotNode = ({ data, id, selected }: any) => (
   <div
-    className={`relative bg-gradient-to-r from-blue-50 to-indigo-50 border-2 rounded-lg p-4 min-w-[200px] shadow-sm transition-all duration-200 ${selected ? "border-blue-500 shadow-lg scale-105" : "border-blue-300 hover:border-blue-400"
+    className={`relative max-w-96 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 rounded-lg p-4 min-w-[200px] shadow-sm transition-all duration-200 ${selected ? "border-blue-500 shadow-lg scale-105" : "border-blue-300 hover:border-blue-400"
       }`}
   >
     <Handle type="target" position={Position.Left} className="w-10 h-10 bg-blue-500 border-2 border-white" />
